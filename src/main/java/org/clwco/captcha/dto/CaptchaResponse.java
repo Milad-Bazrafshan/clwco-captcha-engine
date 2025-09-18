@@ -6,4 +6,5 @@ import lombok.Data;
 public class CaptchaResponse {
     private String base64;
     private int captchaCode;
+    private String key;
 }

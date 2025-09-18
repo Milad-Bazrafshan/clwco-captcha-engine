@@ -1,6 +1,8 @@
 package org.clwco.captcha.services;
 
+import org.clwco.captcha.context.CaptchaManager;
 import org.clwco.captcha.dto.CaptchaResponse;
+import org.springframework.util.ObjectUtils;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -10,6 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.Random;
+import java.util.UUID;
 
 public class CaptchaService {
     public static CaptchaResponse getCaptcha() {
@@ -21,11 +24,18 @@ public class CaptchaService {
             CaptchaResponse captchaResponse = new CaptchaResponse();
             captchaResponse.setCaptchaCode(number);
             captchaResponse.setBase64(convertNumberToImage(number, outputPath));
+            captchaResponse.setKey(UUID.randomUUID().toString().replace("-", ""));
+            CaptchaManager.put(captchaResponse.getKey(), String.valueOf(captchaResponse.getCaptchaCode()));
             return captchaResponse;
         } catch (IOException e) {
             System.err.println("Error : " + e.getMessage());
             throw new RuntimeException(e);
         }
+    }
+
+    public static boolean verifyCaptcha(String code, String key) {
+        var response = CaptchaManager.get(key);
+        return !ObjectUtils.isEmpty(response) && response.equals(code);
     }
 
     public static String convertNumberToImage(int number, String outputPath) throws IOException {
